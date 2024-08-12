@@ -21,7 +21,7 @@ def analyze_lotto_numbers(file_path):
         all_numbers.extend(eval(numbers))  # 문자열을 리스트로 변환
     
     number_counts = Counter(all_numbers)
-    most_common_numbers = number_counts.most_common(15)
+    most_common_numbers = number_counts.most_common(20)
     return most_common_numbers
 
 def generate_lotto_recommendations(most_common_numbers, num_recommendations=5):

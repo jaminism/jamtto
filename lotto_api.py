@@ -47,13 +47,19 @@ def update_lotto_data(file_path):
     
     # 새로운 회차 데이터를 가져와서 추가
     current_draw_no = last_draw_no + 1
+    new_rows = []
     while True:
         result = fetch_lotto_results(current_draw_no)
         if result:
-            df = df.append({'draw_no': current_draw_no, 'numbers': result}, ignore_index=True)
+            new_rows.append({'draw_no': current_draw_no, 'numbers': result})
             current_draw_no += 1
         else:
             break
+    
+    # 새로운 데이터를 데이터프레임으로 변환하고 기존 데이터와 결합
+    if new_rows:
+        new_df = pd.DataFrame(new_rows)
+        df = pd.concat([df, new_df], ignore_index=True)
     
     # 데이터 파일 업데이트
     df.to_csv(file_path, index=False)
