@@ -1,4 +1,6 @@
 import requests
+import pandas as pd
+import os
 
 def fetch_lotto_results(draw_no):
     """
@@ -15,29 +17,39 @@ def fetch_lotto_results(draw_no):
         data = response.json()
         if data["returnValue"] == "success":
             numbers = [data[f"drwtNo{i}"] for i in range(1, 7)]
-            bonus_number = data["bnusNo"]
-            return numbers, bonus_number
+            return numbers
         else:
             return None
     else:
         print(f"Failed to fetch data from API. Status code: {response.status_code}")
         return None
 
-def fetch_all_lotto_results(max_draw_no):
+def update_lotto_data(file_path):
     """
-    최대 회차까지 모든 로또 결과를 가져오는 함수.
+    로컬 파일을 업데이트하여 새로운 로또 데이터를 추가하는 함수.
     
-    :param max_draw_no: 최대 회차 번호
-    :return: 모든 당첨 번호의 리스트
+    :param file_path: 데이터 파일 경로
     """
-    all_numbers = []
+    # 파일이 존재하지 않으면 새로운 파일 생성
+    if not os.path.exists(file_path):
+        df = pd.DataFrame(columns=['draw_no', 'numbers'])
+        df.to_csv(file_path, index=False)
     
-    for draw_no in range(1, max_draw_no + 1):
-        result = fetch_lotto_results(draw_no)
+    # 기존 데이터 불러오기
+    df = pd.read_csv(file_path)
+    
+    # 마지막 회차 확인
+    last_draw_no = df['draw_no'].max() if not df.empty else 0
+    
+    # 새로운 회차 데이터를 가져와서 추가
+    current_draw_no = last_draw_no + 1
+    while True:
+        result = fetch_lotto_results(current_draw_no)
         if result:
-            numbers, _ = result
-            all_numbers.extend(numbers)
+            df = df.append({'draw_no': current_draw_no, 'numbers': result}, ignore_index=True)
+            current_draw_no += 1
         else:
-            break  # 더 이상 결과가 없으면 종료
+            break
     
-    return all_numbers
+    # 데이터 파일 업데이트
+    df.to_csv(file_path, index=False)
