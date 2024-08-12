@@ -3,7 +3,6 @@ import random
 import pandas as pd
 from itertools import combinations
 
-
 def analyze_lotto_numbers(file_path):
     """
     파일에서 데이터를 불러와 숫자의 등장 빈도를 분석하는 함수.
@@ -11,7 +10,11 @@ def analyze_lotto_numbers(file_path):
     :param file_path: 데이터 파일 경로
     :return: 가장 많이 등장한 상위 15개 숫자의 리스트
     """
-    df = pd.read_csv(file_path)
+    try:
+        df = pd.read_csv(file_path)
+    except pd.errors.EmptyDataError:
+        return []  # 파일이 비어 있으면 빈 리스트 반환
+
     all_numbers = []
     
     for numbers in df['numbers']:
@@ -29,6 +32,10 @@ def generate_lotto_recommendations(most_common_numbers, num_recommendations=5):
     :param num_recommendations: 생성할 추천 번호의 수
     :return: 추천 로또 번호의 리스트
     """
+    if not most_common_numbers:
+        print("No data available for recommendations.")
+        return []
+
     top_numbers = [number for number, count in most_common_numbers]
     
     # 모든 가능한 6개 조합 생성

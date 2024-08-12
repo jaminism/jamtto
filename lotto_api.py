@@ -36,7 +36,11 @@ def update_lotto_data(file_path):
         df.to_csv(file_path, index=False)
     
     # 기존 데이터 불러오기
-    df = pd.read_csv(file_path)
+    try:
+        df = pd.read_csv(file_path)
+    except pd.errors.EmptyDataError:
+        # 파일이 비어 있는 경우, 빈 데이터프레임 생성
+        df = pd.DataFrame(columns=['draw_no', 'numbers'])
     
     # 마지막 회차 확인
     last_draw_no = df['draw_no'].max() if not df.empty else 0
