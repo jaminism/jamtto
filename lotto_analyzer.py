@@ -1,6 +1,8 @@
 from collections import Counter
 import random
 import pandas as pd
+from itertools import combinations
+
 
 def analyze_lotto_numbers(file_path):
     """
