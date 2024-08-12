@@ -16,6 +16,7 @@ if __name__ == "__main__":
         print(f"숫자 {number}: {count}번 당첨됨")
     
     # 추천 로또 번호 생성
-    recommendation = generate_lotto_recommendations(most_common_numbers)
+    recommendations = generate_lotto_recommendations(most_common_numbers, num_recommendations=5)
     print("\n추천 로또 번호:")
-    print(recommendation)
+    for i, recommendation in enumerate(recommendations, start=1):
+        print(f"추천 {i}: {recommendation}")
