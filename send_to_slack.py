@@ -8,6 +8,7 @@ def send_lotto_numbers_to_slack(webhook_url, recommendations, context):
     :param webhook_url: Slack Webhook URL
     :param recommendations: 추천 로또 번호의 리스트
     """
+    # Slack 메시지 형식 정의
     message = {
         "text": context,
         "attachments": [
@@ -17,6 +18,7 @@ def send_lotto_numbers_to_slack(webhook_url, recommendations, context):
         ]
     }
 
+    # POST 요청을 통해 Slack으로 메시지 전송\
     response = requests.post(
         webhook_url, 
         data=json.dumps(message), 
