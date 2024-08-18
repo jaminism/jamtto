@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from ast import literal_eval
 import requests
 
 def load_lotto_data(filepath='lotto_data.csv'):

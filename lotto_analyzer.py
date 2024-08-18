@@ -1,6 +1,7 @@
 import random
 import pandas as pd
 from collections import Counter
+from lotto_api import load_lotto_data, parse_winning_numbers
 
 def analyze_lotto_numbers(filepath='lotto_data.csv'):
     """
@@ -21,7 +22,7 @@ def analyze_lotto_numbers(filepath='lotto_data.csv'):
 
 def generate_varied_recommendations(most_common_numbers):
     """
-    분석된 상위 당첨 번호를 기반으로 다양한 추천 번호 조합을 생성.
+    분석된 상위 당첨 번호를 기반으로 다양한 추천 번호 조합을 생성합니다.
 
     :param most_common_numbers: 분석된 상위 당첨 번호 리스트
     :return: 다양한 조합의 추천 로또 번호 리스트들
@@ -78,6 +79,7 @@ def determine_rank(matches):
         return '5등'
     return '낙첨'
 
+
 def run_simulation(filepath='lotto_data.csv', num_simulations=100):
     """
     시뮬레이션을 실행하여 추천받은 번호들을 이전 당첨 번호와 비교하는 함수.
@@ -93,3 +95,20 @@ def run_simulation(filepath='lotto_data.csv', num_simulations=100):
         
         for i, recommended in enumerate(recommendations, start=1):
             max_matches = 0
+            best_matching_draw_no = None
+            best_matching_numbers = None
+
+            for _, row in lotto_data.iterrows():
+                previous_draw_no = row['draw_no']
+                previous_winning_numbers = parse_winning_numbers(row['numbers'])
+                matches = check_winning(recommended, previous_winning_numbers)
+                
+                if matches > max_matches:
+                    max_matches = matches
+                    best_matching_draw_no = previous_draw_no
+                    best_matching_numbers = previous_winning_numbers
+
+            rank = determine_rank(max_matches)
+            if rank in ['1등', '3등']:
+                print(f"시뮬레이션 {sim_num} | 추천 {i}: {recommended} | 최대 일치: {max_matches}개 | 결과: {rank}")
+                print(f"당첨 회차: {best_matching_draw_no} | 당첨 번호: {best_matching_numbers} | 추천 번호: {recommended}")
