@@ -1,7 +1,7 @@
 import requests
 import json
 
-def send_lotto_numbers_to_slack(webhook_url, recommendations):
+def send_lotto_numbers_to_slack(webhook_url, recommendations, context):
     """
     Slack Incoming Webhook을 사용하여 추천 로또 번호를 전송하는 함수.
     
@@ -10,7 +10,7 @@ def send_lotto_numbers_to_slack(webhook_url, recommendations):
     """
     # Slack 메시지 형식 정의
     message = {
-        "text": "이번 주의 추천 로또 번호는 다음과 같습니다:",
+        "text": context,
         "attachments": [
             {
                 "text": "\n".join([f"추천 {i+1}: {', '.join(map(str, recommendation))}" for i, recommendation in enumerate(recommendations)])
@@ -18,7 +18,7 @@ def send_lotto_numbers_to_slack(webhook_url, recommendations):
         ]
     }
 
-    # POST 요청을 통해 Slack으로 메시지 전송
+    # POST 요청을 통해 Slack으로 메시지 전송\
     response = requests.post(
         webhook_url, 
         data=json.dumps(message), 
