@@ -1,48 +1,95 @@
-from collections import Counter
 import random
 import pandas as pd
-from itertools import combinations
+from collections import Counter
 
-def analyze_lotto_numbers(file_path):
+def analyze_lotto_numbers(filepath='lotto_data.csv'):
     """
     파일에서 데이터를 불러와 숫자의 등장 빈도를 분석하는 함수.
     
-    :param file_path: 데이터 파일 경로
-    :return: 가장 많이 등장한 상위 15개 숫자의 리스트
+    :param filepath: 데이터 파일 경로
+    :return: 가장 많이 등장한 상위 번호의 리스트
     """
-    try:
-        df = pd.read_csv(file_path)
-    except pd.errors.EmptyDataError:
-        return []  # 파일이 비어 있으면 빈 리스트 반환
-
+    df = pd.read_csv(filepath)
     all_numbers = []
     
     for numbers in df['numbers']:
         all_numbers.extend(eval(numbers))  # 문자열을 리스트로 변환
     
     number_counts = Counter(all_numbers)
-    most_common_numbers = number_counts.most_common(15)
+    most_common_numbers = [num for num, count in number_counts.most_common(15)]
     return most_common_numbers
 
-def generate_lotto_recommendations(most_common_numbers, num_recommendations=5):
+def generate_varied_recommendations(most_common_numbers):
     """
-    상위 15개의 숫자를 기반으로 추천 번호를 생성하는 함수.
-    
-    :param most_common_numbers: 가장 많이 등장한 상위 15개 숫자 리스트
-    :param num_recommendations: 생성할 추천 번호의 수
-    :return: 추천 로또 번호의 리스트
-    """
-    if not most_common_numbers:
-        print("No data available for recommendations.")
-        return []
+    분석된 상위 당첨 번호를 기반으로 다양한 추천 번호 조합을 생성.
 
-    top_numbers = [number for number, count in most_common_numbers]
+    :param most_common_numbers: 분석된 상위 당첨 번호 리스트
+    :return: 다양한 조합의 추천 로또 번호 리스트들
+    """
+    recommendations = []
+    num_combinations = [(6, 0), (5, 1), (4, 2), (3, 3), (2, 4)]
+    for combo in num_combinations:
+        num_from_common, num_random = combo
+        recommendations.append(generate_recommendations(most_common_numbers, num_from_common, num_random))
+    return recommendations
+
+def generate_recommendations(common_numbers, num_from_common, num_random):
+    """
+    주어진 상위 당첨 번호 중 일부와 랜덤 번호를 혼합하여 추천 번호를 생성합니다.
+
+    :param common_numbers: 분석된 상위 당첨 번호 리스트
+    :param num_from_common: 상위 번호 중 선택할 번호의 수
+    :param num_random: 랜덤으로 생성할 번호의 수
+    :return: 생성된 추천 로또 번호 리스트
+    """
+    selected_numbers = random.sample(common_numbers, num_from_common)
+    additional_numbers = []
+    while len(additional_numbers) < num_random:
+        new_number = random.randint(1, 45)
+        if new_number not in selected_numbers and new_number not in additional_numbers:
+            additional_numbers.append(new_number)
     
-    # 모든 가능한 6개 조합 생성
-    all_combinations = list(combinations(top_numbers, 6))
+    return sorted(selected_numbers + additional_numbers)
+
+def check_winning(recommended, winning_numbers):
+    """
+    추천된 로또 번호가 당첨 번호와 얼마나 일치하는지 확인하는 함수.
     
-    # 무작위로 num_recommendations개의 고유 조합을 선택
-    recommendations = random.sample(all_combinations, num_recommendations)
+    :param recommended: 추천된 로또 번호 리스트
+    :param winning_numbers: 실제 당첨 번호 리스트
+    :return: 일치하는 숫자의 개수
+    """
+    return len(set(recommended) & set(winning_numbers))
+
+def determine_rank(matches):
+    """
+    일치하는 숫자의 개수에 따라 로또 등수를 결정하는 함수.
     
-    # 각 조합을 정렬하여 반환
-    return [sorted(recommendation) for recommendation in recommendations]
+    :param matches: 일치하는 숫자의 개수
+    :return: 로또 등수 (1등, 3등, 4등, 5등, 낙첨)
+    """
+    if matches == 6:
+        return '1등'
+    elif matches == 5:
+        return '3등'
+    elif matches == 4:
+        return '4등'
+    elif matches == 3:
+        return '5등'
+    return '낙첨'
+
+def run_simulation(filepath='lotto_data.csv', num_simulations=100):
+    """
+    시뮬레이션을 실행하여 추천받은 번호들을 이전 당첨 번호와 비교하는 함수.
+    
+    :param filepath: 로또 데이터 파일 경로
+    :param num_simulations: 시뮬레이션 횟수
+    """
+    lotto_data = load_lotto_data(filepath)
+    most_common_numbers = analyze_lotto_numbers(filepath)
+
+    for sim_num in range(1, num_simulations + 1):
+        recommendations = generate_varied_recommendations(most_common_numbers)
+        
+        for i, recommended in enumerate(recommendations, start=1):
+            max_matches = 0

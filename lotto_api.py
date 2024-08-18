@@ -1,6 +1,24 @@
-import requests
-import pandas as pd
 import os
+import pandas as pd
+import requests
+
+def load_lotto_data(filepath='lotto_data.csv'):
+    """
+    CSV 파일에서 로또 데이터를 로드.
+    
+    :param filepath: 로또 데이터 파일 경로
+    :return: 로또 데이터를 담고 있는 pandas DataFrame
+    """
+    return pd.read_csv(filepath)
+
+def parse_winning_numbers(numbers_str):
+    """
+    문자열 형식의 로또 번호를 리스트로 변환.
+    
+    :param numbers_str: 로또 번호가 문자열로 저장된 데이터 (예: "[10, 23, 29, 33, 37, 40]")
+    :return: 로또 번호 리스트 (예: [10, 23, 29, 33, 37, 40])
+    """
+    return literal_eval(numbers_str)
 
 def fetch_lotto_results(draw_no):
     """
@@ -24,7 +42,7 @@ def fetch_lotto_results(draw_no):
         print(f"Failed to fetch data from API. Status code: {response.status_code}")
         return None
 
-def update_lotto_data(file_path):
+def update_lotto_data(file_path='lotto_data.csv'):
     """
     로컬 파일을 업데이트하여 새로운 로또 데이터를 추가하는 함수.
     
@@ -47,13 +65,19 @@ def update_lotto_data(file_path):
     
     # 새로운 회차 데이터를 가져와서 추가
     current_draw_no = last_draw_no + 1
+    new_rows = []
     while True:
         result = fetch_lotto_results(current_draw_no)
         if result:
-            df = df.append({'draw_no': current_draw_no, 'numbers': result}, ignore_index=True)
+            new_rows.append({'draw_no': current_draw_no, 'numbers': result})
             current_draw_no += 1
         else:
             break
+    
+    # 새로운 데이터를 데이터프레임으로 변환하고 기존 데이터와 결합
+    if new_rows:
+        new_df = pd.DataFrame(new_rows)
+        df = pd.concat([df, new_df], ignore_index=True)
     
     # 데이터 파일 업데이트
     df.to_csv(file_path, index=False)

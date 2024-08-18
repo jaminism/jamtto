@@ -1,3 +1,4 @@
 __pycache__/lotto_analyzer.cpython-310.pyc
 __pycache__/lotto_api.cpython-310.pyc
 lotto_data.csv
+config/slack_info.json
